@@ -1,5 +1,6 @@
-import discord
 import os
+import discord
+from discord.ext import commands
 from dotenv import load_dotenv
 
 # 1. Tải các biến môi trường từ file .env
