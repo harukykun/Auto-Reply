@@ -51,7 +51,7 @@ async def on_message(message):
 
         if is_name_called or is_mentioned:
             await message.channel.send(
-                f"Chào {message.author.mention},**Mashiro** hiện đang ngủ trương dái lên rồi. "
+                f"Bạn {message.author.mention} thân mến, **Mashiro** hiện đang ngủ trương dái lên rồi. "
                 "Bạn nhắn tin sau nhé!"
             )
 
