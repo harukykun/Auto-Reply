@@ -9,12 +9,12 @@ load_dotenv()
 # 2. Lấy dữ liệu từ biến môi trường
 BOT_TOKEN = os.getenv('DISCORD_TOKEN')
 try:
-    MY_USER_ID = int(os.getenv('MY_USER_ID')) # Chuyển ID sang số nguyên (int)
+    MY_USER_ID = int(os.getenv('MY_USER_ID'))
 except (TypeError, ValueError):
     print("Lỗi: Vui lòng kiểm tra lại MY_USER_ID trong file .env")
     exit()
 
-# --- CẤU HÌNH QUYỀN (GIỮ NGUYÊN) ---
+# --- CẤU HÌNH QUYỀN ---
 intents = discord.Intents.default()
 intents.message_content = True 
 intents.presences = True       
@@ -35,29 +35,44 @@ async def on_message(message):
     if message.guild is None:
         return
 
-    # Lấy thông tin người dùng mục tiêu từ ID đã lấy trong .env
     target_user = message.guild.get_member(MY_USER_ID)
 
     if target_user is None:
         return 
 
-    # Logic kiểm tra trạng thái
     current_status = str(target_user.status)
     
-    # Chỉ trả lời khi bạn Offline (hoặc Invisible)
     if current_status == 'offline':
         content_lower = message.content.lower()
         is_mentioned = message.mentions and target_user in message.mentions
         is_name_called = "mashiro" in content_lower
 
         if is_name_called or is_mentioned:
-           await message.reply(
+            # --- CẬP NHẬT: Dùng Emoji ID ---
+            try:
+                # Thay dãy số bên dưới bằng ID emoji của bạn
+                target_emoji_id = 1413875601722445997
+                
+                # Lấy object emoji từ ID
+                emoji = client.get_emoji(target_emoji_id)
+
+                if emoji:
+                    await message.add_reaction(emoji)
+                else:
+                    # Nếu bot không tìm thấy emoji (do bot không ở trong server chứa emoji đó)
+                    # thì dùng tạm emoji mặc định
+                    print(f"Không tìm thấy emoji có ID: {target_emoji_id}")
+                    await message.add_reaction('👀') 
+            except discord.HTTPException as e:
+                print(f"Lỗi khi thả emoji: {e}")
+            # -------------------------------
+
+            await message.reply(
                 f"Chắc **Mashiro** hiện đang ngủ trương dái lên rồi. "
                 "Bạn nhắn tin sau nhé!",
                mention_author=True
             )
 
-# Chạy bot bằng Token lấy từ môi trường
 if BOT_TOKEN:
     client.run(BOT_TOKEN)
 else:
