@@ -54,7 +54,7 @@ async def on_message(message):
            await message.reply(
                 f"Chắc **Mashiro** hiện đang ngủ trương dái lên rồi. "
                 "Bạn nhắn tin sau nhé!",
-               mention_author=False
+               mention_author=True
             )
 
 # Chạy bot bằng Token lấy từ môi trường
