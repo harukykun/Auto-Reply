@@ -52,7 +52,7 @@ async def on_message(message):
 
         if is_name_called or is_mentioned:
            await message.reply(
-                f"Bạn {message.author.mention} thân mến, **Mashiro** hiện đang ngủ trương dái lên rồi. "
+                f"Chắc **Mashiro** hiện đang ngủ trương dái lên rồi. "
                 "Bạn nhắn tin sau nhé!"
             )
 
