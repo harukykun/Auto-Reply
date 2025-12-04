@@ -53,7 +53,8 @@ async def on_message(message):
         if is_name_called or is_mentioned:
            await message.reply(
                 f"Chắc **Mashiro** hiện đang ngủ trương dái lên rồi. "
-                "Bạn nhắn tin sau nhé!"
+                "Bạn nhắn tin sau nhé!",
+               mention_author=False
             )
 
 # Chạy bot bằng Token lấy từ môi trường
