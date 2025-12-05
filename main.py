@@ -47,7 +47,7 @@ async def on_message(message):
         is_mentioned = message.mentions and target_user in message.mentions
         is_name_called = "mashiro" in content_lower
 
-        if is_name_called or is_mentioned:
+        if is_mentioned:
             # --- CẬP NHẬT: Dùng Emoji ID ---
             try:
                 # Thay dãy số bên dưới bằng ID emoji của bạn
