@@ -51,7 +51,7 @@ async def on_message(message):
             # --- CẬP NHẬT: Dùng Emoji ID ---
             try:
                 # Thay dãy số bên dưới bằng ID emoji của bạn
-                target_emoji_id = 1413875601722445997
+                target_emoji_id = 1446417289829285959
                 
                 # Lấy object emoji từ ID
                 emoji = client.get_emoji(target_emoji_id)
