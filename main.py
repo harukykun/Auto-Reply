@@ -1,12 +1,7 @@
 import os
 import discord
 from discord.ext import commands
-from dotenv import load_dotenv
 
-# 1. Tải các biến môi trường từ file .env
-load_dotenv()
-
-# 2. Lấy dữ liệu từ biến môi trường
 BOT_TOKEN = os.getenv('DISCORD_TOKEN')
 try:
     MY_USER_ID = int(os.getenv('MY_USER_ID'))
@@ -14,7 +9,6 @@ except (TypeError, ValueError):
     print("Lỗi: Vui lòng kiểm tra lại MY_USER_ID trong file .env")
     exit()
 
-# --- CẤU HÌNH QUYỀN ---
 intents = discord.Intents.default()
 intents.message_content = True 
 intents.presences = True       
@@ -48,24 +42,19 @@ async def on_message(message):
         is_name_called = "mashiro" in content_lower
 
         if is_mentioned:
-            # --- CẬP NHẬT: Dùng Emoji ID ---
             try:
-                # Thay dãy số bên dưới bằng ID emoji của bạn
                 target_emoji_id = 1446417289829285959
-                
-                # Lấy object emoji từ ID
+
                 emoji = client.get_emoji(target_emoji_id)
 
                 if emoji:
                     await message.add_reaction(emoji)
                 else:
-                    # Nếu bot không tìm thấy emoji (do bot không ở trong server chứa emoji đó)
-                    # thì dùng tạm emoji mặc định
+
                     print(f"Không tìm thấy emoji có ID: {target_emoji_id}")
                     await message.add_reaction('👀') 
             except discord.HTTPException as e:
                 print(f"Lỗi khi thả emoji: {e}")
-            # -------------------------------
 
             await message.reply(
                 f"Chắc **Mashiro** hiện đang ngủ trương dái lên rồi. "
