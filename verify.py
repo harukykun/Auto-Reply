@@ -98,7 +98,7 @@ class StartVerifyView(View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(label="Bắt đầu xác thực", style=discord.ButtonStyle.green, custom_id="verify_start_btn")
+    @discord.ui.button(label="Khảo sát Chíacon", style=discord.ButtonStyle.green, custom_id="verify_start_btn")
     async def start_button(self, interaction: discord.Interaction, button: Button):
         await interaction.response.send_message(
             content=QUESTIONS_DATA[0]["question"],
@@ -115,7 +115,7 @@ class VerifySystem(commands.Cog):
         if ctx.channel.id != VERIFY_CHANNEL_ID:
             return
         
-        await ctx.send("Nhấn vào nút bên dưới để bắt đầu xác thực:", view=StartVerifyView())
+        await ctx.send("Nhấn vào nút bên dưới để bắt đầu xác thực", view=StartVerifyView())
 
     @commands.Cog.listener()
     async def on_ready(self):
