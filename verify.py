@@ -113,7 +113,7 @@ class QuestionSelect(Select):
                 if role:
                     try:
                         await member.add_roles(role)
-                        await interaction.response.edit_message(content="Chúc mừng bạn là một Chíacon chân chính. Hãy truy cập <#{1450232000584618057}> bọn mình có món quà nho nhỏ cho bạn.", view=None)
+                        await interaction.response.edit_message(content=f"Chúc mừng bạn là một Chíacon chân chính. Hãy truy cập <#{1450232000584618057}> bọn mình có món quà nho nhỏ cho bạn.", view=None)
                     except discord.Forbidden:
                         await interaction.response.defer()
                 else:
