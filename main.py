@@ -1,5 +1,6 @@
 import os
 import discord
+import asyncio
 from discord.ext import commands
 
 BOT_TOKEN = os.getenv('DISCORD_TOKEN')
@@ -14,20 +15,27 @@ intents.message_content = True
 intents.presences = True       
 intents.members = True         
 
-client = discord.Client(intents=intents)
+bot = commands.Bot(command_prefix="!", intents=intents)
 
-@client.event
+@bot.event
 async def on_ready():
-    print(f'Đã đăng nhập thành công: {client.user}')
+    print(f'Đã đăng nhập thành công: {bot.user}')
     print('Đang theo dõi trạng thái AFK...')
+    try:
+        await bot.load_extension('verify')
+        print("Đã tải module verify thành công.")
+    except Exception as e:
+        print(f"Không thể tải module verify: {e}")
 
-@client.event
+@bot.event
 async def on_message(message):
-    if message.author == client.user:
+    if message.author == bot.user:
         return
     
     if message.guild is None:
         return
+
+    await bot.process_commands(message)
 
     target_user = message.guild.get_member(MY_USER_ID)
 
@@ -44,17 +52,14 @@ async def on_message(message):
         if is_mentioned:
             try:
                 target_emoji_id = 1446417289829285959
-
-                emoji = client.get_emoji(target_emoji_id)
+                emoji = bot.get_emoji(target_emoji_id)
 
                 if emoji:
                     await message.add_reaction(emoji)
                 else:
-
-                    print(f"Không tìm thấy emoji có ID: {target_emoji_id}")
                     await message.add_reaction('👀') 
-            except discord.HTTPException as e:
-                print(f"Lỗi khi thả emoji: {e}")
+            except discord.HTTPException:
+                pass
 
             await message.reply(
                 f"Chắc **Mashiro** hiện đang ngủ trương dái lên rồi. "
@@ -63,6 +68,6 @@ async def on_message(message):
             )
 
 if BOT_TOKEN:
-    client.run(BOT_TOKEN)
+    bot.run(BOT_TOKEN)
 else:
     print("Lỗi: Không tìm thấy DISCORD_TOKEN trong file .env")
