@@ -45,7 +45,7 @@ async def on_message(message):
     current_status = str(target_user.status)
     
     if current_status == 'offline':
-        is_mentioned = message.mentions and target_user in message.mentions
+        is_mentioned = message.mentions
         if is_mentioned:
             try:
                 target_emoji_id = 1446417289829285959
