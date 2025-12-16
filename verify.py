@@ -70,12 +70,10 @@ QUESTIONS_DATA = [
 ]
 
 def has_attempted(user_id):
-    """Kiểm tra xem user_id đã tồn tại trong database chưa."""
     if attempts_col is None: return False
     return attempts_col.find_one({"user_id": user_id}) is not None
 
 def save_attempt(user_id):
-    """Lưu user_id vào database để đánh dấu đã làm."""
     if attempts_col is not None:
         attempts_col.update_one(
             {"user_id": user_id},
