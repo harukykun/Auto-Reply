@@ -26,44 +26,6 @@ async def on_ready():
         print("Đã tải module verify thành công.")
     except Exception as e:
         print(f"Không thể tải module verify: {e}")
-
-@bot.event
-async def on_message(message):
-    if message.author == bot.user:
-        return
-    
-    if message.guild is None:
-        return
-
-    await bot.process_commands(message)
-
-    target_user = message.guild.get_member(MY_USER_ID)
-
-    if target_user is None:
-        return 
-
-    current_status = str(target_user.status)
-    
-    if current_status == 'offline':
-        is_mentioned = message.mentions
-        if is_mentioned:
-            try:
-                target_emoji_id = 1446417289829285959
-                emoji = bot.get_emoji(target_emoji_id)
-
-                if emoji:
-                    await message.add_reaction(emoji)
-                else:
-                    await message.add_reaction('👀') 
-            except discord.HTTPException:
-                pass
-
-            await message.reply(
-                f"Chắc **Mashiro** hiện đang ngủ trương dái lên rồi. "
-                "Bạn nhắn tin sau nhé!",
-               mention_author=True
-            )
-
 if BOT_TOKEN:
     bot.run(BOT_TOKEN)
 else:
