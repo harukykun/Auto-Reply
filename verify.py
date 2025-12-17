@@ -63,7 +63,7 @@ QUESTIONS_DATA = [
         "question": "Câu 5: Chisa là vợ đúng ko??",
         "options": [
             {"label": "Đúng", "value": "correct"},
-            {"label": "Đúng", "value": "correct"},
+            {"label": "Không", "value": "wrong_1"},
         ],
         "correct_value": "correct"
     }
