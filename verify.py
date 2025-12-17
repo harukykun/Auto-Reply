@@ -35,8 +35,8 @@ QUESTIONS_DATA = [
     {
         "question": "Câu 2: Tên của con Capybara là gì?",
         "options": [
-            {"label": "Namipon", "value": "correct"},
             {"label": "Naponmi", "value": "wrong_1"},
+            {"label": "Namipon", "value": "correct"},
             {"label": "Miponna", "value": "wrong_2"}
         ],
         "correct_value": "correct"
@@ -44,9 +44,9 @@ QUESTIONS_DATA = [
     {
         "question": "Câu 3: Chisa gây hiệu ứng xấu gì lên địch?",
         "options": [
-            {"label": "Havoc Bane", "value": "correct"},
             {"label": "Spectro Frazzle", "value": "wrong_1"},
-            {"label": "Electro Flare", "value": "wrong_2"}
+            {"label": "Electro Flare", "value": "wrong_2"},
+            {"label": "Havoc Bane", "value": "correct"}
         ],
         "correct_value": "correct"
     },
@@ -105,17 +105,29 @@ class QuestionSelect(Select):
                 save_attempt(interaction.user.id)
                 
                 guild = interaction.guild
-                member = interaction.user
+                if not guild:
+                    await interaction.response.edit_message(content="Lỗi: Không tìm thấy Server context.", view=None)
+                    return
+
                 role = guild.get_role(VERIFY_ROLE_ID)
                 
                 if role:
                     try:
+                        member = guild.get_member(interaction.user.id)
+                        if member is None:
+                            member = await guild.fetch_member(interaction.user.id)
+
                         await member.add_roles(role)
                         await interaction.response.edit_message(content=f"Chúc mừng bạn là một Chíacon chân chính. Hãy truy cập <#{1450232000584618057}> bọn mình có món quà nho nhỏ cho bạn.", view=None)
+                    
                     except discord.Forbidden:
-                        await interaction.response.defer()
+                        print(f"Lỗi quyền hạn: Bot không thể cấp role {role.name} cho {interaction.user.name}.")
+                        await interaction.response.edit_message(content="Lỗi: Bot không có quyền cấp Role này (Role Bot thấp hơn Role cần cấp hoặc thiếu quyền Manage Roles). Vui lòng liên hệ Admin.", view=None)
+                    except Exception as e:
+                        print(f"Lỗi không xác định khi cấp role: {e}")
+                        await interaction.response.edit_message(content=f"Đã xảy ra lỗi hệ thống: {e}", view=None)
                 else:
-                    await interaction.response.edit_message(content="Bạn đã trả lời đúng hết nhưng không tìm thấy Role ID. Vui lòng liên hệ Admin.", view=None)
+                    await interaction.response.edit_message(content="Bạn đã trả lời đúng hết nhưng không tìm thấy Role ID trên Server. Vui lòng liên hệ Admin.", view=None)
         else:
             save_attempt(interaction.user.id) 
             await interaction.response.edit_message(content="Sai rồi! Rất tiếc, bạn méo phải Chíacon.", view=None)
@@ -131,7 +143,6 @@ class StartVerifyView(View):
 
     @discord.ui.button(label="Khảo sát Chíacon", style=discord.ButtonStyle.green, custom_id="verify_start_btn")
     async def start_button(self, interaction: discord.Interaction, button: Button):
-        # Kiểm tra trong MongoDB trước khi cho phép bắt đầu
         if has_attempted(interaction.user.id):
             await interaction.response.send_message("Bạn đã tham gia khảo sát rồi, không thể thực hiện lại.", ephemeral=True)
             return
