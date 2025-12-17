@@ -27,8 +27,8 @@ QUESTIONS_DATA = [
         "question": "Câu 1: Chisa hiện tại bao nhiêu tuổi? (Câu này khó hãy xuy nghĩ kĩ)",
         "options": [
             {"label": "17 tuổi", "value": "wrong_1"},
-            {"label": "18 tuổi", "value": "wrong_2"},
-            {"label": "37 tuổi", "value": "correct"}
+            {"label": "18 tuổi", "value": "correct"},
+            {"label": "37 tuổi", "value": "wrong_2"}
         ],
         "correct_value": "correct"
     },
