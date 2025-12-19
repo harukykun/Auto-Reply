@@ -2,13 +2,11 @@ import os
 import discord
 import asyncio
 from discord.ext import commands
+from dotenv import load_dotenv
 
+load_dotenv()
 BOT_TOKEN = os.getenv('DISCORD_TOKEN')
-try:
-    MY_USER_ID = int(os.getenv('MY_USER_ID'))
-except (TypeError, ValueError):
-    print("Lỗi: Vui lòng kiểm tra lại MY_USER_ID trong file .env")
-    exit()
+
 
 intents = discord.Intents.default()
 intents.message_content = True 

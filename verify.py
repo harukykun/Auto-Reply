@@ -1,26 +1,28 @@
 import discord
 import os
-from pymongo import MongoClient
+import aiosqlite
 from discord.ext import commands
 from discord.ui import View, Select, Button
 
 VERIFY_CHANNEL_ID = 1450100315327168642
 VERIFY_ROLE_ID = 1450138002121556049
 TARGET_GUILD_ID = 1450079520756465758
-MONGO_URI = os.getenv("MONGO_URI")
 
-if MONGO_URI:
-    try:
-        cluster = MongoClient(MONGO_URI)
-        db = cluster["auto_reply_bot"]    
-        attempts_col = db["verify_attempts"] 
-        print("Đã kết nối thành công tới MongoDB!")
-    except Exception as e:
-        print(f"Lỗi kết nối MongoDB: {e}")
-        attempts_col = None
-else:
-    print("CẢNH BÁO: Chưa cấu hình MONGO_URI trong biến môi trường!")
-    attempts_col = None
+# Cấu hình đường dẫn DB
+DB_PATH = "/data/verify.db"
+if not os.path.exists("/data"):
+    DB_PATH = "verify.db"
+
+# Hàm đảm bảo bảng tồn tại (Chạy mỗi khi cần truy vấn)
+async def ensure_table_exists():
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS attempts (
+                user_id INTEGER PRIMARY KEY,
+                status TEXT
+            )
+        """)
+        await db.commit()
 
 QUESTIONS_DATA = [
     {
@@ -69,17 +71,19 @@ QUESTIONS_DATA = [
     }
 ]
 
-def has_attempted(user_id):
-    if attempts_col is None: return False
-    return attempts_col.find_one({"user_id": user_id}) is not None
+async def has_attempted(user_id):
+    await ensure_table_exists()
+    
+    async with aiosqlite.connect(DB_PATH) as db:
+        async with db.execute("SELECT 1 FROM attempts WHERE user_id = ?", (user_id,)) as cursor:
+            return await cursor.fetchone() is not None
 
-def save_attempt(user_id):
-    if attempts_col is not None:
-        attempts_col.update_one(
-            {"user_id": user_id},
-            {"$set": {"user_id": user_id, "status": "attempted"}},
-            upsert=True
-        )
+async def save_attempt(user_id):
+    await ensure_table_exists()
+    
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("INSERT OR IGNORE INTO attempts (user_id, status) VALUES (?, ?)", (user_id, "attempted"))
+        await db.commit()
 
 class QuestionSelect(Select):
     def __init__(self, question_index, current_view):
@@ -102,7 +106,7 @@ class QuestionSelect(Select):
                 next_view = QuizView(self.question_index + 1)
                 await interaction.response.edit_message(content=QUESTIONS_DATA[self.question_index + 1]["question"], view=next_view)
             else:
-                save_attempt(interaction.user.id)
+                await save_attempt(interaction.user.id)
                 
                 guild = interaction.guild
                 if not guild:
@@ -121,15 +125,13 @@ class QuestionSelect(Select):
                         await interaction.response.edit_message(content=f"Chúc mừng bạn là một Chíacon chân chính. Hãy truy cập <#{1450232000584618057}> bọn mình có món quà nho nhỏ cho bạn.", view=None)
                     
                     except discord.Forbidden:
-                        print(f"Lỗi quyền hạn: Bot không thể cấp role {role.name} cho {interaction.user.name}.")
-                        await interaction.response.edit_message(content="Lỗi: Bot không có quyền cấp Role này (Role Bot thấp hơn Role cần cấp hoặc thiếu quyền Manage Roles). Vui lòng liên hệ Admin.", view=None)
+                        await interaction.response.edit_message(content="Lỗi: Bot không có quyền cấp Role này.", view=None)
                     except Exception as e:
-                        print(f"Lỗi không xác định khi cấp role: {e}")
                         await interaction.response.edit_message(content=f"Đã xảy ra lỗi hệ thống: {e}", view=None)
                 else:
-                    await interaction.response.edit_message(content="Bạn đã trả lời đúng hết nhưng không tìm thấy Role ID trên Server. Vui lòng liên hệ Admin.", view=None)
+                    await interaction.response.edit_message(content="Bạn đã trả lời đúng hết nhưng không tìm thấy Role ID.", view=None)
         else:
-            save_attempt(interaction.user.id) 
+            await save_attempt(interaction.user.id) 
             await interaction.response.edit_message(content="Sai rồi! Rất tiếc, bạn méo phải Chíacon.", view=None)
 
 class QuizView(View):
@@ -143,7 +145,7 @@ class StartVerifyView(View):
 
     @discord.ui.button(label="Khảo sát Chíacon", style=discord.ButtonStyle.green, custom_id="verify_start_btn")
     async def start_button(self, interaction: discord.Interaction, button: Button):
-        if has_attempted(interaction.user.id):
+        if await has_attempted(interaction.user.id):
             await interaction.response.send_message("Bạn đã tham gia khảo sát rồi, không thể thực hiện lại.", ephemeral=True)
             return
 
@@ -161,12 +163,15 @@ class VerifySystem(commands.Cog):
     async def setup_verify(self, ctx):
         if ctx.channel.id != VERIFY_CHANNEL_ID:
             return
-        
         await ctx.send("Nhấn vào nút bên dưới để bắt đầu xác thực. Lưu ý: Bạn chỉ được phép làm 1 lần duy nhất.", view=StartVerifyView())
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        self.bot.add_view(StartVerifyView())
-
 async def setup(bot):
+    try:
+        await ensure_table_exists()
+        print(f"Đã khởi tạo SQLite thành công tại {DB_PATH}")
+    except Exception as e:
+        print(f"Lỗi khởi tạo DB: {e}")
+
+    # Đăng ký View và Cog
+    bot.add_view(StartVerifyView())
     await bot.add_cog(VerifySystem(bot))
